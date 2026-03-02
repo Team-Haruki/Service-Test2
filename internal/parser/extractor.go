@@ -101,7 +101,11 @@ func (e *Extractor) ExtractRegionPrefix(text string) ExtractResult[string] {
 			if len(afterSlash) > nextIdx && isAsciiLetter(afterSlash[nextIdx]) {
 				continue
 			}
-			remaining := "/" + strings.TrimLeftFunc(afterSlash[nextIdx:], isSpaceOrTab)
+			afterRegion := afterSlash[nextIdx:]
+			afterRegion = strings.TrimLeftFunc(afterRegion, func(r rune) bool {
+				return r == ' ' || r == '\t' || r == '/'
+			})
+			remaining := "/" + afterRegion
 			return ExtractResult[string]{Value: region, Remaining: remaining, Found: true}
 		}
 	}
@@ -201,42 +205,46 @@ func (e *Extractor) ExtractSupply(text string) ExtractResult[string] {
 // 7. 通用参数提取 (Flags)
 // -----------------------------------------------------------------------------
 
+var reRegion = regexp.MustCompile(`(?i)-r\s+([a-zA-Z]{2})`)
+
 // ExtractRegion 提取区服参数 (例如: -r jp, -r en)
 func (e *Extractor) ExtractRegion(text string) ExtractResult[string] {
-	re := regexp.MustCompile(`(?i)-r\s+([a-zA-Z]{2})`)
-	if matches := re.FindStringSubmatch(text); len(matches) > 1 {
+	if matches := reRegion.FindStringSubmatch(text); len(matches) > 1 {
 		region := strings.ToLower(matches[1])
-		remaining := re.ReplaceAllString(text, "")
+		remaining := reRegion.ReplaceAllString(text, "")
 		return ExtractResult[string]{Value: region, Remaining: strings.TrimSpace(remaining), Found: true}
 	}
 	return ExtractResult[string]{Value: "", Remaining: text, Found: false}
 }
 
+var rePreview = regexp.MustCompile(`(?i)(^|\s+)(-p|--preview)(\s+|$)`)
+
 // ExtractPreview 提取预览标志 (例如: -p, --preview)
 func (e *Extractor) ExtractPreview(text string) ExtractResult[bool] {
-	re := regexp.MustCompile(`(?i)-p|--preview`)
-	if re.MatchString(text) {
-		remaining := re.ReplaceAllString(text, "")
+	if matches := rePreview.FindStringSubmatch(text); len(matches) > 0 {
+		remaining := rePreview.ReplaceAllString(text, " ")
 		return ExtractResult[bool]{Value: true, Remaining: strings.TrimSpace(remaining), Found: true}
 	}
 	return ExtractResult[bool]{Value: false, Remaining: text, Found: false}
 }
+
+var reHelp = regexp.MustCompile(`(?i)(^|\s+)(-h|--help|帮助)(\s+|$)`)
 
 // ExtractHelp 提取帮助标志 (例如: -h, --help, 帮助)
 func (e *Extractor) ExtractHelp(text string) ExtractResult[bool] {
-	re := regexp.MustCompile(`(?i)-h|--help|帮助`)
-	if re.MatchString(text) {
-		remaining := re.ReplaceAllString(text, "")
+	if matches := reHelp.FindStringSubmatch(text); len(matches) > 0 {
+		remaining := reHelp.ReplaceAllString(text, " ")
 		return ExtractResult[bool]{Value: true, Remaining: strings.TrimSpace(remaining), Found: true}
 	}
 	return ExtractResult[bool]{Value: false, Remaining: text, Found: false}
 }
 
+var reVerbose = regexp.MustCompile(`(?i)(^|\s+)(-v|--verbose)(\s+|$)`)
+
 // ExtractVerbose 提取详细模式标志 (例如: -v, --verbose)
 func (e *Extractor) ExtractVerbose(text string) ExtractResult[bool] {
-	re := regexp.MustCompile(`(?i)-v|--verbose`)
-	if re.MatchString(text) {
-		remaining := re.ReplaceAllString(text, "")
+	if matches := reVerbose.FindStringSubmatch(text); len(matches) > 0 {
+		remaining := reVerbose.ReplaceAllString(text, " ")
 		return ExtractResult[bool]{Value: true, Remaining: strings.TrimSpace(remaining), Found: true}
 	}
 	return ExtractResult[bool]{Value: false, Remaining: text, Found: false}
@@ -247,19 +255,21 @@ func (e *Extractor) ExtractYear(text string) ExtractResult[int] {
 	return e.extractYearInternal(text)
 }
 
-func (e *Extractor) extractYearInternal(text string) ExtractResult[int] {
-	reFull := regexp.MustCompile(`(20\d{2})年?`)
-	reShort := regexp.MustCompile(`(\d{2})年`)
+var (
+	reYearFull  = regexp.MustCompile(`(20\d{2})年?`)
+	reYearShort = regexp.MustCompile(`(\d{2})年`)
+)
 
-	if matches := reFull.FindStringSubmatch(text); len(matches) > 1 {
+func (e *Extractor) extractYearInternal(text string) ExtractResult[int] {
+	if matches := reYearFull.FindStringSubmatch(text); len(matches) > 1 {
 		year, _ := strconv.Atoi(matches[1])
-		remaining := reFull.ReplaceAllString(text, "")
+		remaining := reYearFull.ReplaceAllString(text, "")
 		return ExtractResult[int]{Value: year, Remaining: strings.TrimSpace(remaining), Found: true}
 	}
 
-	if matches := reShort.FindStringSubmatch(text); len(matches) > 1 {
+	if matches := reYearShort.FindStringSubmatch(text); len(matches) > 1 {
 		year, _ := strconv.Atoi("20" + matches[1])
-		remaining := reShort.ReplaceAllString(text, "")
+		remaining := reYearShort.ReplaceAllString(text, "")
 		return ExtractResult[int]{Value: year, Remaining: strings.TrimSpace(remaining), Found: true}
 	}
 
@@ -278,10 +288,11 @@ func (e *Extractor) extractYearInternal(text string) ExtractResult[int] {
 	return ExtractResult[int]{Value: 0, Remaining: text, Found: false}
 }
 
+var reID = regexp.MustCompile(`^\s*(\d+)\s*$`)
+
 // ExtractID 提取纯数字 ID
 func (e *Extractor) ExtractID(text string) ExtractResult[int] {
-	re := regexp.MustCompile(`^\s*(\d+)\s*$`)
-	if matches := re.FindStringSubmatch(text); len(matches) > 1 {
+	if matches := reID.FindStringSubmatch(text); len(matches) > 1 {
 		id, _ := strconv.Atoi(matches[1])
 		return ExtractResult[int]{Value: id, Remaining: "", Found: true}
 	}

@@ -49,14 +49,10 @@ type route struct {
 	mode    string
 }
 
-func NewGlobalCommandResolver(nicknames map[string]int) *GlobalCommandResolver {
-	r := &GlobalCommandResolver{extractor: NewExtractor(nicknames)}
-	r.initRoutes()
-	return r
-}
+var globalRoutes []route
 
-func (r *GlobalCommandResolver) initRoutes() {
-	r.routes = []route{
+func init() {
+	globalRoutes = []route{
 		// ── Card ─────────────────────────────────────────────────────────────────
 		{regexp.MustCompile(`(?i)^/(card-detail|卡面|详情)\s*(.*)`), ModuleCard, "card-detail"},
 		{regexp.MustCompile(`(?i)^/(查卡|查牌|查卡牌|卡牌列表|card|cards|pjsk card|pjsk member)\s*(.*)`), ModuleCard, "card-list"},
@@ -84,7 +80,6 @@ func (r *GlobalCommandResolver) initRoutes() {
 		{regexp.MustCompile(`(?i)^/(活动|查活动|event)\s*(.*)`), ModuleEvent, "event-detail"},
 
 		// ── Education ────────────────────────────────────────────────────────────
-		// 注意：education 各子模式需要用户数据（user.json），Bot 层需在 Params 中附带
 		{regexp.MustCompile(`(?i)^/(挑战赛|挑战信息|挑战赛信息|挑战一览|每日挑战|pjsk challenge info|challenge info)\s*(.*)`), ModuleEducation, "education-challenge"},
 		{regexp.MustCompile(`(?i)^/(加成信息|角色加成|加成一览|pjsk power bonus info|power bonus)\s*(.*)`), ModuleEducation, "education-power"},
 		{regexp.MustCompile(`(?i)^/(区域道具|区域道具材料|道具升级|pjsk area item|area item)\s*(.*)`), ModuleEducation, "education-area"},
@@ -92,7 +87,6 @@ func (r *GlobalCommandResolver) initRoutes() {
 		{regexp.MustCompile(`(?i)^/(加成统计|领队统计|角色领队|领队统计|pjsk leader count)\s*(.*)`), ModuleEducation, "education-leader"},
 
 		// ── Score ────────────────────────────────────────────────────────────────
-		// Score 模块接收结构化 JSON（通常由 Bot 组装），Params 字段承载具体数据
 		{regexp.MustCompile(`(?i)^/(分数|查分数|pjsk score|score control)\s*(.*)`), ModuleScore, "score-control"},
 		{regexp.MustCompile(`(?i)^/(自定义房间分数|自定义分数|custom room score|pjsk custom room score)\s*(.*)`), ModuleScore, "score-custom-room"},
 		{regexp.MustCompile(`(?i)^/(曲目meta|music meta|pjsk music meta)\s*(.*)`), ModuleScore, "score-music-meta"},
@@ -121,10 +115,21 @@ func (r *GlobalCommandResolver) initRoutes() {
 		{regexp.MustCompile(`(?i)^/(mysekai-music-record|mysekai唱片|烤森唱片|msm|mss)\s*(.*)`), ModuleMysekai, "mysekai-music-record"},
 		{regexp.MustCompile(`(?i)^/(mysekai-talk-list|mysekai对话列表|烤森对话列表)\s*(.*)`), ModuleMysekai, "mysekai-talk-list"},
 
+		// ── Help ─────────────────────────────────────────────────────────────────
+		{regexp.MustCompile(`(?i)^/(help|帮助)\s*(.*)`), ModuleHelp, "help"},
+
 		// ── Profile ──────────────────────────────────────────────────────────────
 		{regexp.MustCompile(`(?i)^/sk\s*(.*)`), ModuleProfile, "profile"},
 		{regexp.MustCompile(`(?i)^/(个人中心|个人信息|名片|pjsk profile|profile)\s*(.*)`), ModuleProfile, "profile"},
 	}
+}
+
+func NewGlobalCommandResolver(nicknames map[string]int) *GlobalCommandResolver {
+	r := &GlobalCommandResolver{
+		extractor: NewExtractor(nicknames),
+		routes:    globalRoutes,
+	}
+	return r
 }
 
 // Resolve parses raw command text.

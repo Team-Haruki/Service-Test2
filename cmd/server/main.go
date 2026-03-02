@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -43,11 +45,18 @@ type ParseResponse struct {
 }
 
 type server struct {
+	resolverMu    sync.RWMutex
 	resolver      *parser.GlobalCommandResolver
 	loader        *chardata.Loader
 	logger        *slog.Logger
 	serviceClient *http.Client // HTTP client for calling Part2
 	serviceURL    string       // Part2 /api/render URL
+}
+
+func (s *server) getResolver() *parser.GlobalCommandResolver {
+	s.resolverMu.RLock()
+	defer s.resolverMu.RUnlock()
+	return s.resolver
 }
 
 func main() {
@@ -190,16 +199,7 @@ func (s *server) handleParse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Refresh resolver if nicknames have been updated
-	// (A simple approach: rebuild resolver on every request using loader snapshot.
-	//  For production, consider a smarter swap strategy.)
-	nicknames := s.loader.Nicknames()
-	if nicknames == nil {
-		nicknames = make(map[string]int)
-	}
-	resolver := parser.NewGlobalCommandResolver(nicknames)
-
-	resolved, err := resolver.Resolve(req.Text)
+	resolved, err := s.getResolver().Resolve(req.Text)
 	if err != nil {
 		writeJSON(w, http.StatusOK, ParseResponse{Error: err.Error()})
 		return
@@ -252,12 +252,7 @@ func (s *server) handleProcess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Step 1: Parse the command
-	nicknames := s.loader.Nicknames()
-	if nicknames == nil {
-		nicknames = make(map[string]int)
-	}
-	resolver := parser.NewGlobalCommandResolver(nicknames)
-	resolved, err := resolver.Resolve(req.Text)
+	resolved, err := s.getResolver().Resolve(req.Text)
 	if err != nil {
 		http.Error(w, "parse error: "+err.Error(), http.StatusBadRequest)
 		return
@@ -313,16 +308,7 @@ func (s *server) handleProcess(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 	w.WriteHeader(http.StatusOK)
-	buf := make([]byte, 32*1024)
-	for {
-		n, readErr := resp.Body.Read(buf)
-		if n > 0 {
-			_, _ = w.Write(buf[:n])
-		}
-		if readErr != nil {
-			break
-		}
-	}
+	_, _ = io.Copy(w, resp.Body)
 }
 
 // handleReload forces a reload of character nicknames from DB.
@@ -342,7 +328,9 @@ func (s *server) handleReload(w http.ResponseWriter, r *http.Request) {
 	if nicknames == nil {
 		nicknames = make(map[string]int)
 	}
+	s.resolverMu.Lock()
 	s.resolver = parser.NewGlobalCommandResolver(nicknames)
+	s.resolverMu.Unlock()
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
