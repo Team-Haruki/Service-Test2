@@ -1,0 +1,45 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║         Haruki-Command-Parser  —  configs.yaml                  ║
+# ║  Part1: 纯文本指令解析 + 角色昵称查询（仅读 game_characters 表）     ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+# ── HTTP 服务 ──────────────────────────────────────────────────────
+server:
+  host: "0.0.0.0"
+  port: 24001         # Part1 固定监听 24001；Part2 监听 24000
+
+# ── Part2 连接配置 ──────────────────────────────────────────────────
+# Part1 解析完指令后，直接调用 Part2 的 /api/render 接口获取图片。
+# Bot 只与 Part1 对话，拿回图片后直接发送。
+service_api:
+  base_url: "http://localhost:24000"  # Part2 地址（Docker 环境改为容器名）
+  timeout: "60s"                       # 单次渲染超时（DrawingAPI 较慢时可适当延长）
+
+# ── 日志 ───────────────────────────────────────────────────────────
+log:
+  level: "info"     # debug | info | warn | error
+  format: "text"    # text（本地调试） | json（生产/Docker 环境）
+
+# ── Haruki-Cloud 数据库（仅用于角色昵称加载）──────────────────────────
+# Part1 只访问 game_characters 和 game_character_units 两张表，
+# 不需要 cards/musics/events 等完整游戏数据。
+# DB 连接信息与 Part2 保持一致（指向同一个 PostgreSQL 实例）。
+haruki_cloud:
+  sekai_db:
+    driver:   "postgres"
+    host:     "localhost"
+    port:     5432
+    database: "master_data"
+    user:     "haruki"
+    password: "sszh2015"
+    sslmode:  "disable"
+    # 若需要直接指定完整 DSN 可用 dsn 字段（设置后 host/port 等被忽略）:
+    # dsn: "host=localhost port=5432 user=haruki password=sszh2015 dbname=master_data sslmode=disable"
+
+  # 默认区服（影响昵称表的查询区服过滤）
+  # 支持: jp | cn | en | tw | kr
+  region: "jp"
+
+  # 角色昵称缓存刷新间隔（0 表示不自动刷新，启动时加载一次）
+  # 推荐设置为 6h（若角色数据更新频繁可缩短为 1h）
+  cache_refresh_interval: "6h"
