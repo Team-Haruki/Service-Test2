@@ -1,0 +1,108 @@
+package sekai
+
+import (
+	"Haruki-Command-Parser/internal/handler"
+	sekairegion "Haruki-Command-Parser/internal/sekai_region"
+	"fmt"
+	"strings"
+)
+
+var entertainmentJPRegions = []*sekairegion.SekaiRegion{sekairegion.GetRegionById("jp")}
+
+func (sekaiHandlers) EntertainmentLimitHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/pjsk entertainment limit", "/pjsk_entertainment_limit",
+			"/pjsk娱乐功能上限", "/pel",
+		}},
+		Regions: entertainmentJPRegions,
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			// TODO: 迁移 superuser 校验 + daily_limits 写入逻辑
+			return nil, fmt.Errorf("TODO: 设置娱乐次数限制未实现，args=%q", strings.TrimSpace(ctx.GetArgs()))
+		},
+	}
+}
+
+func (sekaiHandlers) EntertainmentLimitCheckHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/pjsk entertainment count", "/pjsk_entertainment_count",
+			"/pjsk娱乐功能次数", "/pec",
+		}},
+		Regions: entertainmentJPRegions,
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			// TODO: 迁移 daily_limits/daily_usages 读取与日期重置逻辑
+			return nil, fmt.Errorf("TODO: 查看娱乐次数未实现，group_id=%s", ctx.GetGroupId())
+		},
+	}
+}
+
+func (sekaiHandlers) GuessCoverHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/pjsk guess cover", "/pjsk_guess_cover",
+			"/pjsk猜曲封", "/pjsk猜曲绘", "/猜曲绘", "/猜曲封",
+		}},
+		Regions: entertainmentJPRegions,
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			// TODO: 迁移 check_daily_entertainment_limit + start_guess(猜曲绘) 逻辑
+			return nil, fmt.Errorf("TODO: 猜曲绘未实现，args=%q", strings.TrimSpace(ctx.GetArgs()))
+		},
+	}
+}
+
+func (sekaiHandlers) GuessChartHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/pjsk guess chart", "/pjsk_guess_chart",
+			"/pjsk猜谱面", "/猜谱面", "/pjsk猜铺面", "/猜铺面",
+		}},
+		Regions: entertainmentJPRegions,
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			// TODO: 迁移 check_daily_entertainment_limit + start_guess(猜谱面) 逻辑
+			return nil, fmt.Errorf("TODO: 猜谱面未实现，args=%q", strings.TrimSpace(ctx.GetArgs()))
+		},
+	}
+}
+
+func (sekaiHandlers) GuessCardHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/pjsk guess card", "/pjsk_guess_card",
+			"/pjsk猜卡面", "/猜卡面", "/pjsk猜卡", "/猜卡",
+		}},
+		Regions: entertainmentJPRegions,
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			// TODO: 迁移 check_daily_entertainment_limit + start_guess(猜卡面) 逻辑
+			return nil, fmt.Errorf("TODO: 猜卡面未实现，args=%q", strings.TrimSpace(ctx.GetArgs()))
+		},
+	}
+}
+
+func (sekaiHandlers) GuessMusicHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/pjsk guess music", "/pjsk_guess_music",
+			"/听歌识曲", "/pjsk听歌识曲", "/猜歌", "/pjsk猜歌", "/猜曲", "/pjsk猜曲",
+		}},
+		Regions: entertainmentJPRegions,
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			// TODO: 迁移 check_daily_entertainment_limit + 随机裁剪音频 + start_guess(听歌识曲) 逻辑
+			return nil, fmt.Errorf("TODO: 听歌识曲未实现，args=%q", strings.TrimSpace(ctx.GetArgs()))
+		},
+	}
+}
+
+func (sekaiHandlers) SpinGachaHandle() SekaiCommandHandler {
+	return SekaiCommandHandler{
+		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
+			"/单抽", "/十连", "/10连", "/50连", "/100连", "/150连", "/200连",
+		}},
+		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			trigger := ctx.GetTriggerCmd()
+			args := strings.TrimSpace(ctx.GetArgs())
+			// TODO: 迁移 check_daily_entertainment_limit + parse_search_gacha_args + spin_gacha + compose_gacha_spin_image
+			return nil, fmt.Errorf("TODO: 模拟抽卡未实现，trigger=%q, args=%q", trigger, args)
+		},
+	}
+}
