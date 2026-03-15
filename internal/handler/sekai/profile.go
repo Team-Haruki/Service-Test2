@@ -2,6 +2,7 @@ package sekai
 
 import (
 	"Haruki-Command-Parser/internal/handler"
+	"Haruki-Command-Parser/internal/parser"
 	sekairegion "Haruki-Command-Parser/internal/sekai_region"
 	"fmt"
 	"strconv"
@@ -133,9 +134,7 @@ func (sekaiHandlers) ProfileInfoHandle() SekaiCommandHandler {
 			"/pjsk profile", "/个人信息", "/名片", "/pjsk 个人信息", "/pjsk 名片",
 		}},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			args := strings.TrimSpace(ctx.GetArgs())
-			// TODO: 迁移 get_player_bind_id + snowy 分支 + compose_profile_image 回图逻辑
-			return nil, fmt.Errorf("TODO: 个人信息查询未实现，args=%q", args)
+			return makeResolvedCmd(ctx, parser.ModuleProfile, "profile"), nil
 		},
 	}
 }

@@ -1,8 +1,16 @@
 package sekai
 
 import (
+	"encoding/json"
 	"Haruki-Command-Parser/internal/parser"
+	"strings"
 )
+
+var currentNicknames map[string]int
+
+func SetNicknames(nicknames map[string]int) {
+	currentNicknames = nicknames
+}
 
 func makeResolvedCmd(ctx SekaiHandlerContext, module parser.TargetModule, mode string) *parser.ResolvedCommand {
 	return &parser.ResolvedCommand{
@@ -14,4 +22,27 @@ func makeResolvedCmd(ctx SekaiHandlerContext, module parser.TargetModule, mode s
 		IsVerbose: ctx.Flags()["is_verbose"],
 		IsPreview: ctx.Flags()["is_preview"],
 	}
+}
+
+func makeResolvedCmdWithParams(ctx SekaiHandlerContext, module parser.TargetModule, mode string, params any) *parser.ResolvedCommand {
+	resolved := makeResolvedCmd(ctx, module, mode)
+	if params == nil {
+		return resolved
+	}
+	if data, err := json.Marshal(params); err == nil {
+		resolved.Params = data
+	}
+	return resolved
+}
+
+func resolveNicknameArg(args string) (int, string) {
+	if len(currentNicknames) == 0 {
+		return 0, strings.TrimSpace(args)
+	}
+	ext := parser.NewExtractor(currentNicknames)
+	res := ext.ExtractCharacter(args)
+	if res.Found {
+		return res.Value, strings.TrimSpace(res.Remaining)
+	}
+	return 0, strings.TrimSpace(args)
 }

@@ -6,6 +6,7 @@ import (
 	sekairegion "Haruki-Command-Parser/internal/sekai_region"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -17,7 +18,15 @@ func (sekaiHandlers) CardDetailHandle() SekaiCommandHandler {
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			return makeResolvedCmd(ctx, parser.ModuleCard, "card-detail"), nil
+			args := strings.TrimSpace(ctx.GetArgs())
+			if isCardBoxQuery(args) {
+				ctx.SetArgs(cleanCardBoxArgs(args))
+				return makeResolvedCmdWithParams(ctx, parser.ModuleCard, "card-box", cardBoxParams(args)), nil
+			}
+			if isSingleCardIDQuery(args) {
+				return makeResolvedCmd(ctx, parser.ModuleCard, "card-detail"), nil
+			}
+			return makeResolvedCmd(ctx, parser.ModuleCard, "card-list"), nil
 		},
 	}
 }
@@ -30,6 +39,14 @@ func (sekaiHandlers) CardListHandle() SekaiCommandHandler {
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			if isCardBoxQuery(args) {
+				ctx.SetArgs(cleanCardBoxArgs(args))
+				return makeResolvedCmdWithParams(ctx, parser.ModuleCard, "card-box", cardBoxParams(args)), nil
+			}
+			if isSingleCardIDQuery(args) {
+				return makeResolvedCmd(ctx, parser.ModuleCard, "card-detail"), nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleCard, "card-list"), nil
 		},
 	}
@@ -42,9 +59,44 @@ func (sekaiHandlers) CardBoxHandle() SekaiCommandHandler {
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			return makeResolvedCmd(ctx, parser.ModuleCard, "card-box"), nil
+			args := strings.TrimSpace(ctx.GetArgs())
+			ctx.SetArgs(cleanCardBoxArgs(args))
+			return makeResolvedCmdWithParams(ctx, parser.ModuleCard, "card-box", cardBoxParams(args)), nil
 		},
 	}
+}
+
+func isSingleCardIDQuery(args string) bool {
+	fields := strings.Fields(strings.TrimSpace(args))
+	if len(fields) != 1 {
+		return false
+	}
+	value, err := strconv.Atoi(fields[0])
+	return err == nil && value > 0
+}
+
+func isCardBoxQuery(args string) bool {
+	lower := strings.ToLower(strings.TrimSpace(args))
+	return strings.Contains(lower, " box") ||
+		strings.HasSuffix(lower, "box") ||
+		strings.Contains(lower, " id") ||
+		strings.HasSuffix(lower, "id") ||
+		strings.Contains(lower, " before") ||
+		strings.HasSuffix(lower, "before")
+}
+
+func cardBoxParams(args string) map[string]any {
+	lower := strings.ToLower(strings.TrimSpace(args))
+	return map[string]any{
+		"show_id":            strings.Contains(lower, "id"),
+		"show_box":           strings.Contains(lower, "box"),
+		"use_after_training": !strings.Contains(lower, "before"),
+	}
+}
+
+func cleanCardBoxArgs(args string) string {
+	replacer := strings.NewReplacer("id", "", "box", "", "before", "")
+	return strings.TrimSpace(replacer.Replace(strings.ToLower(args)))
 }
 
 // TODO
@@ -142,7 +194,6 @@ func (sekaiHandlers) BoxHandle() SekaiCommandHandler {
 				"/pjsk box",
 				"/卡牌一览", "/卡面一览", "/卡一览",
 			},
-			Disabled: true,
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
@@ -165,12 +216,12 @@ func (sekaiHandlers) BoxHandle() SekaiCommandHandler {
 				args = strings.TrimSpace(strings.ReplaceAll(args, "before", ""))
 			}
 
-			// TODO: 迁移 search_multi_cards(..., contain_leak=false) 并校验剩余参数
-			// TODO: 迁移 compose_box_image(ctx, ctx.user_id, cards, showID, showBox, useAfterTraining)
-			return nil, fmt.Errorf(
-				"TODO: 卡牌一览查询未实现，query=%q, showID=%t, showBox=%t, useAfterTraining=%t",
-				args, showID, showBox, useAfterTraining,
-			)
+			ctx.SetArgs(strings.TrimSpace(args))
+			return makeResolvedCmdWithParams(ctx, parser.ModuleCard, "card-box", map[string]any{
+				"show_id":            showID,
+				"show_box":           showBox,
+				"use_after_training": useAfterTraining,
+			}), nil
 		},
 	}
 }

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -32,6 +33,7 @@ type ResolvedCommand struct {
 	Mode      string
 	Query     string
 	Region    string
+	Params    json.RawMessage
 	IsHelp    bool
 	IsVerbose bool
 	IsPreview bool

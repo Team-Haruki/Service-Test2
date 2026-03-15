@@ -12,22 +12,27 @@ func (sekaiHandlers) StampHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/贴纸", "/查贴纸", "/pjsk贴纸", "/pjsk stamp", "/pjsk bq", "/stamp",
+				"/贴纸", "/查贴纸", "/pjsk贴纸", "/pjsk表情", "/pjsk stamp", "/pjsk bq", "/stamp",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			if params := parseStampIDs(args); len(params) > 0 {
+				ctx.SetArgs("")
+				return makeResolvedCmdWithParams(ctx, parser.ModuleStamp, "stamp-list", map[string]any{
+					"ids": params,
+				}), nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleStamp, "stamp-list"), nil
 		},
 	}
 }
 
-// TODO
 func (sekaiHandlers) StampMakeHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/pjsk stamp", "/pjsk bq",
-				"/pjsk表情", "/pjsk表情制作",
+				"/pjsk表情制作",
 			},
 			Disabled: true,
 		},
@@ -42,9 +47,14 @@ func (sekaiHandlers) StampMakeHandle() SekaiCommandHandler {
 				format = "png"
 				args = strings.TrimSpace(strings.ReplaceAll(args, "png", ""))
 			}
-
-			// TODO: 迁移 block_region + 参数解析(qtype=id/cid/id_text) + 获取/制作表情逻辑
-			return nil, fmt.Errorf("TODO: 表情查询/制作未实现，query=%q, format=%s", args, format)
+			_ = format
+			if ids := parseStampIDs(args); len(ids) > 0 {
+				ctx.SetArgs("")
+				return makeResolvedCmdWithParams(ctx, parser.ModuleStamp, "stamp-list", map[string]any{
+					"ids": ids,
+				}), nil
+			}
+			return nil, fmt.Errorf("当前仅支持按表情ID查询，暂不支持表情制作：%q", args)
 		},
 	}
 }
@@ -161,4 +171,20 @@ func (sekaiHandlers) StampBaseDeleteHandle() SekaiCommandHandler {
 			return nil, fmt.Errorf("TODO: 删除表情底图未实现，sids=%v", sids)
 		},
 	}
+}
+
+func parseStampIDs(args string) []int {
+	fields := strings.Fields(strings.TrimSpace(args))
+	if len(fields) == 0 {
+		return nil
+	}
+	ids := make([]int, 0, len(fields))
+	for _, field := range fields {
+		id, err := strconv.Atoi(field)
+		if err != nil || id <= 0 {
+			return nil
+		}
+		ids = append(ids, id)
+	}
+	return ids
 }

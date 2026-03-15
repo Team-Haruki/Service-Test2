@@ -13,7 +13,7 @@ func (sekaiHandlers) MiscBirthdayHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/pjsk chara birthday", "/角色生日", "/生日",
+				"/pjsk chara birthday", "/角色生日", "/生日", "/查生日",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -25,7 +25,7 @@ func (sekaiHandlers) ProfileHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/sk", "/个人中心", "/个人信息", "/名片", "/pjsk profile", "/profile",
+				"/个人中心", "/profile",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -109,22 +109,6 @@ func (sekaiHandlers) ExtractCardHandle() SekaiCommandHandler {
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 CardExtractor 初始化、回复图片提取、网格渲染与回图逻辑
 			return nil, errors.New("TODO: 提取卡牌未实现")
-		},
-	}
-}
-
-func (sekaiHandlers) CharaBirthdayHandle() SekaiCommandHandler {
-	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{
-			Commands: []string{
-				"/pjsk chara birthday", "/角色生日", "/生日",
-			},
-			Disabled: true,
-		},
-		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			args := strings.TrimSpace(ctx.GetArgs())
-			// TODO: 迁移角色生日信息汇总、参数解析、绘图与回图逻辑
-			return nil, fmt.Errorf("TODO: 角色生日未实现，query=%q", args)
 		},
 	}
 }

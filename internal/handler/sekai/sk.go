@@ -4,9 +4,6 @@ import (
 	"Haruki-Command-Parser/internal/handler"
 	"Haruki-Command-Parser/internal/parser"
 	sekairegion "Haruki-Command-Parser/internal/sekai_region"
-	"fmt"
-	"strconv"
-	"strings"
 )
 
 func (sekaiHandlers) SKLineHandle() SekaiCommandHandler {
@@ -111,17 +108,10 @@ func (sekaiHandlers) SKDailySpeedHandle() SekaiCommandHandler {
 			Commands: []string{
 				"/pjsk sk daily speed", "/pjsk board daily speed", "/日速", "/skds", "/skdv", "/sk日速",
 			},
-			Disabled: true,
 		},
 		PrefixArgs: []string{"", "wl"},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			args := strings.TrimSpace(ctx.GetArgs()) + ctx.prefixArg
-			days := 1
-			if v, err := strconv.Atoi(strings.TrimSpace(args)); err == nil {
-				days = v
-			}
-			// TODO: 迁移 extract_wl_event + compose_sks_image(unit='d') 回图逻辑
-			return nil, fmt.Errorf("TODO: 日速查询未实现，days=%d, query=%q", days, args)
+			return makeResolvedCmd(ctx, parser.ModuleSK, "sk-speed"), nil
 		},
 	}
 }
@@ -132,13 +122,10 @@ func (sekaiHandlers) SKPredictHandle() SekaiCommandHandler {
 			Commands: []string{
 				"/pjsk sk predict", "/pjsk board predict", "/sk预测", "/榜线预测", "/skp",
 			},
-			Disabled: true,
 		},
 		PrefixArgs: []string{"", "wl"},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			args := strings.TrimSpace(ctx.GetArgs()) + ctx.prefixArg
-			// TODO: 迁移 extract_wl_event + wl 单榜拦截 + compose_skp_image 回图逻辑
-			return nil, fmt.Errorf("TODO: 榜线预测未实现，query=%q", args)
+			return makeResolvedCmd(ctx, parser.ModuleSK, "sk-rank-trace"), nil
 		},
 	}
 }
@@ -149,13 +136,10 @@ func (sekaiHandlers) SKBoardHandle() SekaiCommandHandler {
 			Commands: []string{
 				"/pjsk sk board", "/pjsk board", "/sk",
 			},
-			Disabled: true,
 		},
 		PrefixArgs: []string{"", "wl"},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			args := strings.TrimSpace(ctx.GetArgs()) + ctx.prefixArg
-			// TODO: 迁移 extract_wl_event + parse_sk_query_params + compose_sk_image 回图逻辑
-			return nil, fmt.Errorf("TODO: 指定榜线查询未实现，query=%q", args)
+			return makeResolvedCmd(ctx, parser.ModuleSK, "sk-query"), nil
 		},
 	}
 }
@@ -166,13 +150,10 @@ func (sekaiHandlers) CSBHandle() SekaiCommandHandler {
 			Commands: []string{
 				"/csb", "/查水表", "/pjsk查水表", "/停车时间",
 			},
-			Disabled: true,
 		},
 		PrefixArgs: []string{"", "wl"},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			args := strings.TrimSpace(ctx.GetArgs()) + ctx.prefixArg
-			// TODO: 迁移 extract_wl_event + parse_sk_query_params + compose_csb_image 回图逻辑
-			return nil, fmt.Errorf("TODO: 查水表未实现，query=%q", args)
+			return makeResolvedCmd(ctx, parser.ModuleSK, "sk-check-room"), nil
 		},
 	}
 }

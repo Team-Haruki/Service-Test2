@@ -15,7 +15,7 @@ func (sekaiHandlers) EventHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/pjsk events", "/pjsk_events", "/events", "/活动列表", "/活动一览",
+				"/pjsk events", "/pjsk_events", "/events", "/活动列表", "/活动一览", "/event-list",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -27,7 +27,7 @@ func (sekaiHandlers) EventDetailHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/活动", "/查活动", "/event",
+				"/pjsk event", "/pjsk_event", "/活动", "/查活动", "/event",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -100,11 +100,9 @@ func (sekaiHandlers) EventRecordHandle() SekaiCommandHandler {
 				"/pjsk event record", "/pjsk_event_record",
 				"/活动记录", "/冲榜记录",
 			},
-			Disabled: true,
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			// TODO: 迁移 compose_event_record_image(ctx, ctx.user_id) 回图逻辑
-			return nil, fmt.Errorf("TODO: 活动记录未实现，user_id=%s", ctx.GetUserId())
+			return makeResolvedCmd(ctx, parser.ModuleEvent, "event-record"), nil
 		},
 	}
 }

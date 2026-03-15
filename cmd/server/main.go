@@ -41,6 +41,7 @@ type ParseResponse struct {
 	Mode   string          `json:"mode,omitempty"`
 	Region string          `json:"region,omitempty"`
 	Query  string          `json:"query,omitempty"`
+	Params json.RawMessage `json:"params,omitempty"`
 	Flags  map[string]bool `json:"flags,omitempty"`
 	Error  string          `json:"error,omitempty"`
 }
@@ -107,6 +108,7 @@ func main() {
 		loader.StartBackgroundRefresh(ctx, refreshInterval)
 	}
 
+	sekaihandler.SetNicknames(loader.Nicknames())
 	sekaihandler.RegisterSekaiCommandHandler()
 
 	// --- HTTP client for Part2 ---
@@ -213,6 +215,7 @@ func (s *server) handleParse(w http.ResponseWriter, r *http.Request) {
 		Mode:   resolved.Mode,
 		Region: resolved.Region,
 		Query:  resolved.Query,
+		Params: resolved.Params,
 		Flags: map[string]bool{
 			"is_help":    resolved.IsHelp,
 			"is_verbose": resolved.IsVerbose,
@@ -291,7 +294,9 @@ func (s *server) handleProcess(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	// Forward params from Bot (for SK/Mysekai/Education/Score modules that need external data)
-	if len(req.Params) > 0 {
+	if len(resolved.Params) > 0 {
+		renderPayload["params"] = resolved.Params
+	} else if len(req.Params) > 0 {
 		renderPayload["params"] = req.Params
 	}
 
@@ -342,9 +347,7 @@ func (s *server) handleReload(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}
-	// Wait, resolver was handling reloading of character nicknames.
-	// Since the handler system uses `parser.Extractor` which currently handles nickname matching if supplied... Wait!
-	// Extractor has nicknames, but Handler framework does not inject nicknames.
+	sekaihandler.SetNicknames(s.loader.Nicknames())
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 

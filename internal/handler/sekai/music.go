@@ -16,6 +16,13 @@ func (sekaiHandlers) MusicDetailHandle() SekaiCommandHandler {
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			if diff, cleaned := extractMusicDifficulty(args); diff != "" {
+				ctx.SetArgs(cleaned)
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMusic, "music-detail", map[string]any{
+					"difficulty": diff,
+				}), nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleMusic, "music-detail"), nil
 		},
 	}
@@ -24,10 +31,17 @@ func (sekaiHandlers) MusicListHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/歌曲列表", "/歌曲一览", "/乐曲列表", "/乐曲一览", "/难度排行", "/定数表", "/歌曲定数", "/查乐曲", "/music-list",
+				"/歌曲列表", "/歌曲一览", "/乐曲列表", "/乐曲一览", "/难度排行", "/定数表", "/歌曲定数", "/查乐曲", "/music-list", "/pjsk music list",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			if diff, cleaned := extractMusicDifficulty(args); diff != "" {
+				ctx.SetArgs(cleaned)
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMusic, "music-list", map[string]any{
+					"difficulty": diff,
+				}), nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleMusic, "music-list"), nil
 		},
 	}
@@ -37,7 +51,7 @@ func (sekaiHandlers) MusicRewardsHandle() SekaiCommandHandler {
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
 				"/曲目奖励", "/歌曲奖励", "/music rewards", "/music-rewards", "/pjsk music rewards",
-				"/打歌奖励", "/歌曲挖矿", "/打歌挖矿",
+				"/打歌奖励", "/歌曲挖矿", "/打歌挖矿", "/pjsk 曲目奖励",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -50,7 +64,7 @@ func (sekaiHandlers) MusicProgressHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/打歌进度", "/歌曲进度", "/打歌信息", "/pjsk进度", "/progress", "/music-progress",
+				"/打歌进度", "/歌曲进度", "/打歌信息", "/pjsk进度", "/progress", "/music-progress", "/pjsk music progress",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -83,15 +97,19 @@ func (sekaiHandlers) SongHandle() SekaiCommandHandler {
 				"/pjsk song", "/pjsk music", "/song", "/music",
 				"/查曲", "/查歌", "/歌曲", "/查歌曲",
 			},
-			Disabled: true,
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			query := strings.TrimSpace(ctx.GetArgs())
 			if query == "" {
 				return nil, fmt.Errorf("请输入要查询的歌曲名或ID")
 			}
-			// TODO: 迁移 leak 查询、多曲查询、单曲详情查询逻辑
-			return nil, fmt.Errorf("TODO: 查曲未实现，query=%q", query)
+			if diff, cleaned := extractMusicDifficulty(query); diff != "" {
+				ctx.SetArgs(cleaned)
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMusic, "music-detail", map[string]any{
+					"difficulty": diff,
+				}), nil
+			}
+			return makeResolvedCmd(ctx, parser.ModuleMusic, "music-detail"), nil
 		},
 	}
 }
@@ -124,12 +142,16 @@ func (sekaiHandlers) PlayProgressHandle() SekaiCommandHandler {
 				"/pjsk progress",
 				"/pjsk进度", "/打歌进度", "/歌曲进度", "/打歌信息",
 			},
-			Disabled: true,
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
-			// TODO: 迁移 extract_diff + compose_play_progress_image 回图逻辑
-			return nil, fmt.Errorf("TODO: 打歌进度未实现，args=%q", args)
+			if diff, cleaned := extractMusicDifficulty(args); diff != "" {
+				ctx.SetArgs(cleaned)
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMusic, "music-progress", map[string]any{
+					"difficulty": diff,
+				}), nil
+			}
+			return makeResolvedCmd(ctx, parser.ModuleMusic, "music-progress"), nil
 		},
 	}
 }
@@ -214,4 +236,26 @@ func (sekaiHandlers) AliasHandle() SekaiCommandHandler {
 			return nil, fmt.Errorf("TODO: 查看歌曲别名未实现，args=%q", args)
 		},
 	}
+}
+
+func extractMusicDifficulty(args string) (string, string) {
+	fields := strings.Fields(strings.TrimSpace(args))
+	if len(fields) == 0 {
+		return "", strings.TrimSpace(args)
+	}
+	diffMap := map[string]string{
+		"easy": "easy", "ez": "easy", "绿谱": "easy",
+		"normal": "normal", "nm": "normal", "黄谱": "normal",
+		"hard": "hard", "hd": "hard", "红谱": "hard",
+		"expert": "expert", "ex": "expert", "紫谱": "expert",
+		"master": "master", "mas": "master", "粉谱": "master",
+		"append": "append", "app": "append", "黑谱": "append",
+	}
+	for i, field := range fields {
+		if diff, ok := diffMap[strings.ToLower(field)]; ok {
+			fields = append(fields[:i], fields[i+1:]...)
+			return diff, strings.TrimSpace(strings.Join(fields, " "))
+		}
+	}
+	return "", strings.TrimSpace(args)
 }

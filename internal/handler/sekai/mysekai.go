@@ -12,10 +12,23 @@ func (sekaiHandlers) MysekaiResourceHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/mysekai-resource", "/mysekai资源", "/烤森资源", "/msmap", "/msa",
+				"/pjsk mysekai res", "/mysekai-resource", "/mysekai资源", "/烤森资源", "/msr", "/msmap", "/msa",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			params := map[string]any{}
+			if strings.Contains(strings.ToLower(args), "all") {
+				params["show_harvested"] = true
+			}
+			if !strings.Contains(strings.ToLower(args), "force") {
+				params["check_time"] = true
+			} else {
+				params["check_time"] = false
+			}
+			if len(params) > 0 {
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-resource", params), nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-resource"), nil
 		},
 	}
@@ -29,7 +42,15 @@ func (sekaiHandlers) MysekaiTalkListHandle() SekaiCommandHandler {
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			return makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-talk-list"), nil
+			args := strings.TrimSpace(ctx.GetArgs())
+			showAllTalks := strings.Contains(strings.ToLower(args), "all")
+			cleaned := cleanMysekaiArgs(args)
+			resolved := makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-talk-list", map[string]any{
+				"show_id":        true,
+				"show_all_talks": showAllTalks,
+			})
+			resolved.Query = cleaned
+			return resolved, nil
 		},
 	}
 }
@@ -37,11 +58,21 @@ func (sekaiHandlers) MysekaiFixtureListHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/mysekai-fixture-list", "/mysekai家具列表", "/烤森家具列表", "/msf",
+				"/mysekai-fixture-list", "/mysekai家具列表", "/烤森家具列表",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			return makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-fixture-list"), nil
+			args := strings.TrimSpace(ctx.GetArgs())
+			showID := !strings.Contains(strings.ToLower(args), "noid")
+			onlyCraftable := false
+			if strings.Contains(strings.ToLower(args), "craft") {
+				onlyCraftable = true
+			}
+			resolved := makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-fixture-list", map[string]any{
+				"show_id":        showID,
+				"only_craftable": onlyCraftable,
+			})
+			return resolved, nil
 		},
 	}
 }
@@ -55,7 +86,28 @@ func (sekaiHandlers) MysekaiFurnitureHandle() SekaiCommandHandler {
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
-			return makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-fixture-detail"), nil
+			args := strings.TrimSpace(ctx.GetArgs())
+			if ids := parseMysekaiFixtureIDs(args); len(ids) > 0 {
+				resolved := makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-fixture-detail")
+				resolved.Query = strings.Join(strings.Fields(args), " ")
+				return resolved, nil
+			}
+
+			showAllTalks := strings.Contains(strings.ToLower(args), "all")
+			cleaned := cleanMysekaiArgs(args)
+			if cleaned == "" {
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-fixture-list", map[string]any{
+					"show_id":        true,
+					"only_craftable": false,
+				}), nil
+			}
+
+			resolved := makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-talk-list", map[string]any{
+				"show_id":        true,
+				"show_all_talks": showAllTalks,
+			})
+			resolved.Query = cleaned
+			return resolved, nil
 		},
 	}
 }
@@ -64,10 +116,19 @@ func (sekaiHandlers) MysekaiDoorUpgradeHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/mysekai-door-upgrade", "/mysekai大门升级", "/烤森大门升级", "/msg", "/msgate",
+				"/pjsk mysekai gate", "/mysekai-door-upgrade", "/mysekai大门升级", "/烤森大门升级", "/msg", "/msgate",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			if gateID, cleaned := extractMysekaiGateID(args); gateID != 0 {
+				resolved := makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-door-upgrade")
+				resolved.Query = strconv.Itoa(gateID)
+				if cleaned != "" {
+					resolved.Query = strings.TrimSpace(resolved.Query + " " + cleaned)
+				}
+				return resolved, nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-door-upgrade"), nil
 		},
 	}
@@ -76,16 +137,89 @@ func (sekaiHandlers) MysekaiMusicRecordHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
 			Commands: []string{
-				"/mysekai-music-record", "/mysekai唱片", "/烤森唱片", "/msm", "/mss",
+				"/pjsk mysekai musicrecord", "/mysekai-music-record", "/mysekai唱片", "/烤森唱片", "/msm", "/mss", "/mssong",
 			},
 		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
+			args := strings.TrimSpace(ctx.GetArgs())
+			showID := strings.Contains(strings.ToLower(args), "id")
+			if showID {
+				cleaned := strings.TrimSpace(strings.ReplaceAll(strings.ToLower(args), "id", ""))
+				ctx.SetArgs(cleaned)
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-music-record", map[string]bool{
+					"show_id": true,
+				}), nil
+			}
 			return makeResolvedCmd(ctx, parser.ModuleMysekai, "mysekai-music-record"), nil
 		},
 	}
 }
 
-// TODO
+func parseMysekaiFixtureIDs(args string) []int {
+	fields := strings.Fields(strings.TrimSpace(args))
+	if len(fields) == 0 {
+		return nil
+	}
+	ids := make([]int, 0, len(fields))
+	for _, field := range fields {
+		value, err := strconv.Atoi(field)
+		if err != nil || value <= 0 {
+			return nil
+		}
+		ids = append(ids, value)
+	}
+	return ids
+}
+
+func cleanMysekaiArgs(args string) string {
+	fields := strings.Fields(strings.TrimSpace(args))
+	if len(fields) == 0 {
+		return ""
+	}
+	unitTokens := map[string]struct{}{
+		"ln": {}, "mmj": {}, "vbs": {}, "ws": {}, "wxs": {}, "25": {}, "25h": {}, "25ji": {}, "niigo": {}, "vs": {}, "piapro": {},
+	}
+	var kept []string
+	for _, field := range fields {
+		lower := strings.ToLower(strings.TrimSpace(field))
+		if lower == "" || lower == "all" || lower == "id" {
+			continue
+		}
+		if _, ok := unitTokens[lower]; ok {
+			continue
+		}
+		kept = append(kept, field)
+	}
+	return strings.TrimSpace(strings.Join(kept, " "))
+}
+
+func extractMysekaiGateID(args string) (int, string) {
+	lower := strings.ToLower(strings.TrimSpace(args))
+	unitMap := map[string]int{
+		"light_sound": 1,
+		"ln":          1,
+		"idol":        2,
+		"mmj":         2,
+		"street":      3,
+		"vbs":         3,
+		"theme_park":  4,
+		"ws":          4,
+		"wxs":         4,
+		"school_refusal": 5,
+		"25":              5,
+		"25h":             5,
+		"25ji":            5,
+		"niigo":           5,
+	}
+	for token, gateID := range unitMap {
+		if strings.Contains(lower, token) {
+			cleaned := strings.TrimSpace(strings.ReplaceAll(lower, token, ""))
+			return gateID, cleaned
+		}
+	}
+	return 0, strings.TrimSpace(args)
+}
+
 func (sekaiHandlers) MysekaiBlueprintHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
 		CommandHandlerBase: handler.CommandHandlerBase{
@@ -93,15 +227,23 @@ func (sekaiHandlers) MysekaiBlueprintHandle() SekaiCommandHandler {
 				"/pjsk mysekai blueprint", "/mysekai blueprint",
 				"/msb", "/mysekai 蓝图",
 			},
-			Disabled: true,
 		},
-		// TODO: refer 中限制 regions=get_regions(RegionAttributes.MYSEKAI)
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
-			showID := strings.Contains(args, "id")
-			showAllTalks := strings.Contains(args, "all")
-			// TODO: 迁移 unit/cid 解析 + compose_mysekai_fixture_list_image/compose_mysekai_talk_list_image 回图逻辑
-			return nil, fmt.Errorf("TODO: mysekai蓝图查询未实现，args=%q, show_id=%t, show_all_talks=%t", args, showID, showAllTalks)
+			showAllTalks := strings.Contains(strings.ToLower(args), "all")
+			cid, cleaned := resolveNicknameArg(args)
+			if cid == 0 {
+				return makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-fixture-list", map[string]any{
+					"show_id":        true,
+					"only_craftable": true,
+				}), nil
+			}
+			resolved := makeResolvedCmdWithParams(ctx, parser.ModuleMysekai, "mysekai-talk-list", map[string]any{
+				"show_id":        true,
+				"show_all_talks": showAllTalks,
+			})
+			resolved.Query = cleaned
+			return resolved, nil
 		},
 	}
 }
