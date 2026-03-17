@@ -191,8 +191,8 @@ func (t *handlerTreeNode) get(command []rune, prefixLength int, macthed matchedH
 	}
 	// 如果传入的处理器为空或者优先级不高于当前的handler，将handler替换为当前的（如果有）
 	if t.handler != nil &&
-		((t.priority > 0 && t.priority <= macthedPriority) ||
-			macthed.Handler == nil) {
+		(macthedPriority == 0 ||
+			(t.priority > 0 && t.priority <= macthedPriority)) {
 		macthed.Command = t.command
 		macthed.PrefixLength = prefixLength
 		macthed.Handler = t.handler
