@@ -11,10 +11,13 @@ import (
 
 func (sekaiHandlers) ProfileBindHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk bind", "/pjsk id",
-			"/绑定", "/pjsk 绑定",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk bind", "/pjsk id",
+				"/绑定", "/pjsk 绑定",
+			},
+			Disabled: true,
+		},
 		// TODO: parse_uid_arg=False 的行为目前未迁移
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
@@ -26,9 +29,12 @@ func (sekaiHandlers) ProfileBindHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileUnbindHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk unbind", "/pjsk解绑", "/解绑",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk unbind", "/pjsk解绑", "/解绑",
+			},
+			Disabled: true,
+		},
 		// TODO: parse_uid_arg=False 的行为目前未迁移
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.ToLower(strings.TrimSpace(ctx.GetArgs()))
@@ -45,9 +51,12 @@ func (sekaiHandlers) ProfileUnbindHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileSetMainHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk set main", "/pjsk主账号", "/设置主账号", "/主账号",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk set main", "/pjsk主账号", "/设置主账号", "/主账号",
+			},
+			Disabled: true,
+		},
 		// TODO: parse_uid_arg=False 的行为目前未迁移
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(strings.ReplaceAll(ctx.GetArgs(), "u", ""))
@@ -63,10 +72,13 @@ func (sekaiHandlers) ProfileSetMainHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileSwapBindHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk swap bind", "/pjsk交换绑定",
-			"/交换绑定", "/绑定交换", "/交换账号", "/交换账号顺序",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk swap bind", "/pjsk交换绑定",
+				"/交换绑定", "/绑定交换", "/交换账号", "/交换账号顺序",
+			},
+			Disabled: true,
+		},
 		// TODO: parse_uid_arg=False 的行为目前未迁移
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			parts := strings.Fields(strings.TrimSpace(ctx.GetArgs()))
@@ -81,9 +93,12 @@ func (sekaiHandlers) ProfileSwapBindHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileHideSuiteHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk hide suite", "/pjsk隐藏抓包", "/隐藏抓包",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk hide suite", "/pjsk隐藏抓包", "/隐藏抓包",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 hide_suite_list 写入逻辑
 			return nil, fmt.Errorf("TODO: 隐藏抓包信息未实现，user_id=%s", ctx.GetUserId())
@@ -93,9 +108,12 @@ func (sekaiHandlers) ProfileHideSuiteHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileShowSuiteHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk show suite", "/pjsk显示抓包", "/pjsk展示抓包", "/展示抓包",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk show suite", "/pjsk显示抓包", "/pjsk展示抓包", "/展示抓包",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 hide_suite_list 移除逻辑
 			return nil, fmt.Errorf("TODO: 展示抓包信息未实现，user_id=%s", ctx.GetUserId())
@@ -105,9 +123,12 @@ func (sekaiHandlers) ProfileShowSuiteHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileHideIDHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk hide id", "/pjsk隐藏id", "/pjsk隐藏ID", "/隐藏id", "/隐藏ID",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk hide id", "/pjsk隐藏id", "/pjsk隐藏ID", "/隐藏id", "/隐藏ID",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 hide_id_list 写入逻辑
 			return nil, fmt.Errorf("TODO: 隐藏ID信息未实现，user_id=%s", ctx.GetUserId())
@@ -117,10 +138,13 @@ func (sekaiHandlers) ProfileHideIDHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileShowIDHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk show id", "/pjsk显示id", "/pjsk显示ID", "/pjsk展示id", "/pjsk展示ID",
-			"/展示id", "/展示ID", "/显示id", "/显示ID",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk show id", "/pjsk显示id", "/pjsk显示ID", "/pjsk展示id", "/pjsk展示ID",
+				"/展示id", "/展示ID", "/显示id", "/显示ID",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 hide_id_list 移除逻辑
 			return nil, fmt.Errorf("TODO: 展示ID信息未实现，user_id=%s", ctx.GetUserId())
@@ -130,9 +154,12 @@ func (sekaiHandlers) ProfileShowIDHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileInfoHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk profile", "/个人信息", "/名片", "/pjsk 个人信息", "/pjsk 名片",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk profile", "/个人信息", "/名片", "/pjsk 个人信息", "/pjsk 名片",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			return makeResolvedCmd(ctx, parser.ModuleProfile, "profile"), nil
 		},
@@ -141,9 +168,12 @@ func (sekaiHandlers) ProfileInfoHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileRegTimeHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk reg time", "/注册时间", "/pjsk 注册时间", "/查时间",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk reg time", "/注册时间", "/pjsk 注册时间", "/查时间",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 get_player_bind_id + get_register_time 逻辑
 			return nil, fmt.Errorf("TODO: 注册时间查询未实现，user_id=%s", ctx.GetUserId())
@@ -153,9 +183,12 @@ func (sekaiHandlers) ProfileRegTimeHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileCheckServiceHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk check service", "/pcs", "/pjsk检查服务状态",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk check service", "/pcs", "/pjsk检查服务状态",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 get_service_status 逻辑
 			return nil, fmt.Errorf("TODO: profile服务状态检查未实现")
@@ -165,9 +198,12 @@ func (sekaiHandlers) ProfileCheckServiceHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileDataModeHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk data mode", "/pjsk抓包模式", "/pjsk抓包获取模式", "/抓包模式",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk data mode", "/pjsk抓包模式", "/pjsk抓包获取模式", "/抓包模式",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
 			// TODO: 迁移 data_modes 查询/切换逻辑
@@ -178,9 +214,12 @@ func (sekaiHandlers) ProfileDataModeHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileCheckDataHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk check data", "/pjsk抓包", "/pjsk抓包状态", "/pjsk抓包数据", "/pjsk抓包查询", "/抓包数据", "/抓包状态", "/抓包信息",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk check data", "/pjsk抓包", "/pjsk抓包状态", "/pjsk抓包数据", "/pjsk抓包查询", "/抓包数据", "/抓包状态", "/抓包信息",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 at用户解析 + get_suite_upload_time + 文本组装逻辑
 			return nil, fmt.Errorf("TODO: 抓包状态查询未实现，user_id=%s", ctx.GetUserId())
@@ -190,10 +229,13 @@ func (sekaiHandlers) ProfileCheckDataHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileBlacklistAddHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk blacklist add", "/pjsk add blacklist",
-			"/pjsk黑名单添加", "/pjsk添加黑名单",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk blacklist add", "/pjsk add blacklist",
+				"/pjsk黑名单添加", "/pjsk添加黑名单",
+			},
+			Disabled: true,
+		},
 		// TODO: refer 中这里是 CmdHandler（非 SekaiCmdHandler）
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
@@ -208,10 +250,13 @@ func (sekaiHandlers) ProfileBlacklistAddHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileBlacklistRemoveHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk blacklist remove", "/pjsk blacklist del", "/pjsk remove blacklist", "/pjsk del blacklist",
-			"/pjsk黑名单移除", "/pjsk移除黑名单", "/pjsk删除黑名单",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk blacklist remove", "/pjsk blacklist del", "/pjsk remove blacklist", "/pjsk del blacklist",
+				"/pjsk黑名单移除", "/pjsk移除黑名单", "/pjsk删除黑名单",
+			},
+			Disabled: true,
+		},
 		// TODO: refer 中这里是 CmdHandler（非 SekaiCmdHandler）
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
@@ -226,9 +271,12 @@ func (sekaiHandlers) ProfileBlacklistRemoveHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileVerifyHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk verify", "/pjsk验证",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk verify", "/pjsk验证",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 block_region + verify_user_game_account(ctx)
 			return nil, fmt.Errorf("TODO: 游戏账号验证未实现，user_id=%s", ctx.GetUserId())
@@ -238,9 +286,12 @@ func (sekaiHandlers) ProfileVerifyHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileVerifyListHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk verify list", "/pjsk验证列表", "/pjsk验证状态",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk verify list", "/pjsk验证列表", "/pjsk验证状态",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			// TODO: 迁移 get_user_verified_uids + 输出脱敏列表逻辑
 			return nil, fmt.Errorf("TODO: 验证列表查询未实现，user_id=%s", ctx.GetUserId())
@@ -250,10 +301,13 @@ func (sekaiHandlers) ProfileVerifyListHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileUploadBGHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk upload profile bg", "/pjsk upload profile background",
-			"/上传个人信息背景", "/上传个人信息图片", "/上传个人背景", "/上传个人信息",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk upload profile bg", "/pjsk upload profile background",
+				"/上传个人信息背景", "/上传个人信息图片", "/上传个人背景", "/上传个人信息",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
 			force := strings.Contains(args, "force")
@@ -265,10 +319,13 @@ func (sekaiHandlers) ProfileUploadBGHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileClearBGHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk clear profile bg", "/pjsk clear profile background",
-			"/清空个人信息背景", "/清除个人信息背景", "/清空个人信息图片", "/清除个人信息图片",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk clear profile bg", "/pjsk clear profile background",
+				"/清空个人信息背景", "/清除个人信息背景", "/清空个人信息图片", "/清除个人信息图片",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
 			force := strings.Contains(args, "force")
@@ -280,10 +337,13 @@ func (sekaiHandlers) ProfileClearBGHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileAdjustBGHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk adjust profile", "/pjsk adjust profile bg", "/pjsk adjust profile background",
-			"/调整个人信息背景", "/调整个人信息", "/设置个人信息", "/设置个人信息背景",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk adjust profile", "/pjsk adjust profile bg", "/pjsk adjust profile background",
+				"/调整个人信息背景", "/调整个人信息", "/设置个人信息", "/设置个人信息背景",
+			},
+			Disabled: true,
+		},
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
 			force := strings.Contains(args, "force")
@@ -295,9 +355,12 @@ func (sekaiHandlers) ProfileAdjustBGHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileUserStatHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk user sta", "/用户统计",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk user sta", "/用户统计",
+			},
+			Disabled: true,
+		},
 		// TODO: refer 中这里是 CmdHandler（非 SekaiCmdHandler）
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
 			args := strings.TrimSpace(ctx.GetArgs())
@@ -314,6 +377,7 @@ func (sekaiHandlers) ProfileBindHistoryHandle() SekaiCommandHandler {
 				"/pjsk bind history", "/pjsk bind his", "/绑定历史", "/绑定记录",
 			},
 			Priority: 1,
+			Disabled: true,
 		},
 		// TODO: refer 中这里是 CmdHandler（非 SekaiCmdHandler）
 		handleFunc: func(ctx SekaiHandlerContext) (interface{}, error) {
@@ -326,9 +390,12 @@ func (sekaiHandlers) ProfileBindHistoryHandle() SekaiCommandHandler {
 
 func (sekaiHandlers) ProfileCreateGuestHandle() SekaiCommandHandler {
 	return SekaiCommandHandler{
-		CommandHandlerBase: handler.CommandHandlerBase{Commands: []string{
-			"/pjsk create guest", "/pjsk register", "/pjsk注册",
-		}},
+		CommandHandlerBase: handler.CommandHandlerBase{
+			Commands: []string{
+				"/pjsk create guest", "/pjsk register", "/pjsk注册",
+			},
+			Disabled: true,
+		},
 		Regions: []*sekairegion.SekaiRegion{
 			sekairegion.GetRegionById("jp"),
 			sekairegion.GetRegionById("en"),
